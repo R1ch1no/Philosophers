@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 14:12:56 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/04/29 19:11:02 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/04/30 15:20:07 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,12 +31,11 @@ int	ft_phil_init(int argc, char **argv, t_stats *stats)
 	while (++pos < stats->nb_philosoph)
 	{
 		stats->philo[pos].position = pos;
-		stats->philo[pos].fork = 1;
 		stats->philo[pos].nb_ate = 0;
 		stats->philo[pos].last_ate = 0;
 		stats->philo[pos].start_time = 0;
-		stats->philo[pos].alive = 1;
 		stats->philo[pos].think = 0;
+		pthread_mutex_init(&stats->philo[pos].fork, NULL);
 	}
 	return (0);
 }
@@ -51,6 +50,7 @@ void	*philo_start(void *stat)
 	stats->pos += 1;
 	pas = stats->pos;
 	pthread_mutex_unlock(&stats->mutex);
+	stats->philo[pas].ate = 0;
 	stats->philo[pas].start_time = ft_timestamp();
 	stats->philo[pas].last_ate = stats->philo[pas].start_time;
 	ft_commander(stats, pas);
@@ -59,28 +59,26 @@ void	*philo_start(void *stat)
 
 void	ft_start(t_stats *stats)
 {
-	pthread_t	philo[stats->nb_philosoph];
+	pthread_t	philo[500];
 	long		pos;
 
-	pos = 0;
-	while (pos < stats->nb_philosoph)
+	pos = -1;
+	while (++pos < stats->nb_philosoph)
 	{
 		if (pthread_create(&philo[pos], NULL, philo_start, stats) != 0)
 		{
 			write(1, "Thread creation error!\n", 24);
-			return ;
+			--pos;
+			break ;
 		}
-		pos++;
 	}
-	pos = 0;
-	while (pos < stats->nb_philosoph)
+	while (--pos > -1)
 	{
 		if (pthread_join(philo[pos], NULL) != 0)
 		{
 			write(1, "Thread joining error!\n", 22);
 			return ;
 		}
-		pos++;
 	}
 }
 
@@ -93,8 +91,9 @@ int	ft_check_params(int argc, char **argv)
 	}
 	if (argc == 6)
 	{
-		if (ft_atoi(argv[1]) < 1 || ft_atoi(argv[2]) < 0 || ft_atoi(argv[3]) < 0
-			|| ft_atoi(argv[4]) < 0 || ft_atoi(argv[5]) < 0)
+		if (ft_atoi(argv[1]) < 1 || ft_atoi(argv[1]) > 500
+			|| ft_atoi(argv[2]) < 0 || ft_atoi(argv[3]) < 0
+			|| ft_atoi(argv[4]) < 0 || ft_atoi(argv[5]) <= 0)
 		{
 			write(1, "Wrong parameters !\n", 19);
 			return (1);
@@ -114,8 +113,10 @@ int	ft_check_params(int argc, char **argv)
 
 int	main(int argc, char **argv)
 {
-	t_stats *stats;
+	t_stats		*stats;
+	long long	pos;
 
+	pos = -1;
 	if (ft_check_params(argc, argv) == 1)
 		return (0);
 	stats = malloc(sizeof(t_stats));
@@ -129,6 +130,8 @@ int	main(int argc, char **argv)
 	pthread_mutex_init(&stats->mutex, NULL);
 	stats->death = 0;
 	ft_start(stats);
+	while (++pos < stats->nb_philosoph)
+		pthread_mutex_destroy(&stats->philo[pos].fork);
 	pthread_mutex_destroy(&stats->mutex);
 	free(stats->philo);
 	free(stats);

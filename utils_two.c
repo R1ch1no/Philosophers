@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 13:32:24 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/04/29 17:59:10 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/04/30 15:20:10 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,18 +31,6 @@ void	wait_time(long long waiting)
 
 	timestamp_begin = ft_timestamp();
 	timestamp_end = timestamp_begin;
-	while ((timestamp_end - timestamp_begin) < waiting)
+	while ((timestamp_end - timestamp_begin) <= waiting)
 		timestamp_end = ft_timestamp();
-}
-
-void	philo_think(t_stats *stats, long long pas)
-{
-	if (stats->philo[pas].think == 0)
-	{
-		stats->philo[pas].think = 1;
-		pthread_mutex_lock(&stats->mutex);
-		printf("%lli\t%lli is thinking\n", ft_timestamp()
-						- stats->philo[pas].start_time, pas);
-		pthread_mutex_unlock(&stats->mutex);
-	}
 }
