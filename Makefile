@@ -6,7 +6,7 @@
 #    By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/02/02 14:03:41 by rkurnava          #+#    #+#              #
-#    Updated: 2023/04/30 15:20:08 by rkurnava         ###   ########.fr        #
+#    Updated: 2023/04/30 15:58:53 by rkurnava         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,7 +28,7 @@ $(NAME) : $(OBJ)
 	@echo "$(NAME) created"
 
 %.o : %.c
-	@$(CC) $(CFLAGS) -c -o $@ $<
+	@$(CC) $(CFLAGS) -c -g -o $@ $<
 
 clean :
 	@rm -f $(OBJ)
