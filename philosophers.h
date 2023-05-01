@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:57:19 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/04/30 15:20:08 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/01 17:09:31 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ typedef struct s_philosoph
 	long long		last_ate;
 	int				think;
 	int				ate;
+	int				alive;
 	pthread_mutex_t	fork;
 }					t_philosph;
 

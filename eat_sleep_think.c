@@ -6,23 +6,29 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 16:57:00 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/04/30 17:59:15 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/01 17:51:25 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
 //checks if philosopher died of starvation, return 0 when philo died
-int	philo_die(t_stats *stats, long long pas, long long old, long long new)
+int	philo_die(t_stats *stats, long long pas)
 {
-	if ((new - old) >= stats->time_to_die)
+	long long	last_ate;
+	long long	possible_eat;
+
+	last_ate = stats->philo[pas].last_ate;
+	possible_eat = ft_timestamp();
+	if ((possible_eat - last_ate) >= stats->time_to_die)
 	{
 		pthread_mutex_lock(&stats->mutex);
 		printf("%lli\t%lli has died\n", ft_timestamp()
 				- stats->philo[pas].start_time, pas);
 		stats->death = 1;
+		stats->philo[pas].alive = 0;
 		pthread_mutex_unlock(&stats->mutex);
-		return (0);
+		exit(0);
 	}
 	return (1);
 }
@@ -30,10 +36,11 @@ int	philo_die(t_stats *stats, long long pas, long long old, long long new)
 //philosopher eats
 int	philo_eat(t_stats *stats, long long pas, long long num)
 {
-	if (stats->death == 0 && stats->nb_philosoph > 1
-		&& stats->philo[pas].ate == 0 && philo_die(stats, pas) == 1
-		&& pthread_mutex_lock(&stats->philo[pas].fork) == 0
-		&& pthread_mutex_lock(&stats->philo[(pas + 1) % num].fork) == 0)
+	if (pthread_mutex_lock(&stats->philo[pas].fork) == 0
+		&& pthread_mutex_lock(&stats->philo[((pas + 1)
+				% stats->nb_philosoph)].fork) == 0 && philo_die(stats, pas) == 1
+		&& (stats->death == 0 && stats->nb_philosoph > 1
+			&& stats->philo[pas].ate == 0))
 	{
 		stats->philo[pas].last_ate = ft_timestamp();
 		stats->philo[pas].think = 0;
@@ -56,19 +63,22 @@ int	philo_eat(t_stats *stats, long long pas, long long num)
 //philospher sleeps
 void	philo_sleep(t_stats *stats, long long pas)
 {
-	stats->philo[pas].think = 0;
-	stats->philo[pas].ate = 0;
-	pthread_mutex_lock(&stats->mutex);
-	printf("%lli\t%lli is sleeping\n", ft_timestamp()
-			- stats->philo[pas].start_time, pas);
-	pthread_mutex_unlock(&stats->mutex);
-	wait_time(stats->time_to_sleep);
+	if (stats->philo[pas].alive == 1)
+	{
+		stats->philo[pas].think = 0;
+		stats->philo[pas].ate = 0;
+		pthread_mutex_lock(&stats->mutex);
+		printf("%lli\t%lli is sleeping\n", ft_timestamp()
+				- stats->philo[pas].start_time, pas);
+		pthread_mutex_unlock(&stats->mutex);
+		wait_time(stats->time_to_sleep);
+	}
 }
 
 //make philosopher think
 void	philo_think(t_stats *stats, long long pas)
 {
-	if (stats->philo[pas].think == 0)
+	if (stats->philo[pas].think == 0 && stats->philo[pas].alive == 1)
 	{
 		stats->philo[pas].think = 1;
 		stats->philo[pas].ate = 0;
@@ -84,28 +94,24 @@ void	philo_think(t_stats *stats, long long pas)
 //tell the project what to do
 void	ft_commander(t_stats *stats, long long pas)
 {
-	long long time_to_sleep;
-
-	time_to_sleep = 0;
-	while (philo_die(stats, pas) != 0 && stats->to_eat > 0
-		&& stats->to_eat != stats->philo[pas].nb_ate)
+	while (stats->philo[pas].alive == 1 && stats->to_eat > 0 && philo_die(stats,
+			pas) == 1 && stats->philo[pas].nb_ate <= stats->time_to_eat)
 	{
-		philo_eat(stats, pas, stats->nb_philosoph);
-		time_to_sleep = (ft_timestamp() - stats->philo[pas].last_ate)
-			+ stats->time_to_sleep;
-		if (philo_eat(stats, pas, stats->nb_philosoph) == 1
-			&& time_to_sleep >= stats->time_to_die)
+		if (stats->nb_philosoph > 1)
+			philo_eat(stats, pas, stats->nb_philosoph);
+		if ((ft_timestamp() - stats->philo[pas].last_ate)
+			+ stats->time_to_sleep >= stats->time_to_die)
 			philo_think(stats, pas);
 		else
 			philo_sleep(stats, pas);
 	}
-	while (philo_die(stats, pas) != 0 && stats->to_eat == 0)
+	while (stats->philo[pas].alive == 1 && stats->to_eat == 0
+		&& philo_die(stats, pas) == 1)
 	{
-		philo_eat(stats, pas, stats->nb_philosoph);
-		time_to_sleep = (ft_timestamp() - stats->philo[pas].last_ate)
-			+ stats->time_to_sleep;
-		if (philo_eat(stats, pas, stats->nb_philosoph) == 1
-			&& time_to_sleep >= stats->time_to_die)
+		if (stats->nb_philosoph > 1)
+			philo_eat(stats, pas, stats->nb_philosoph);
+		if ((ft_timestamp() - stats->philo[pas].last_ate)
+			+ stats->time_to_sleep >= stats->time_to_die)
 			philo_think(stats, pas);
 		else
 			philo_sleep(stats, pas);
