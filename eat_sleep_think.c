@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 16:57:00 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/01 17:51:25 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/03 13:33:23 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,26 +94,31 @@ void	philo_think(t_stats *stats, long long pas)
 //tell the project what to do
 void	ft_commander(t_stats *stats, long long pas)
 {
-	while (stats->philo[pas].alive == 1 && stats->to_eat > 0 && philo_die(stats,
-			pas) == 1 && stats->philo[pas].nb_ate <= stats->time_to_eat)
+	if (stats->to_eat > 0)
 	{
-		if (stats->nb_philosoph > 1)
-			philo_eat(stats, pas, stats->nb_philosoph);
-		if ((ft_timestamp() - stats->philo[pas].last_ate)
-			+ stats->time_to_sleep >= stats->time_to_die)
-			philo_think(stats, pas);
-		else
-			philo_sleep(stats, pas);
+		while (stats->philo[pas].nb_ate <= stats->to_eat
+			&& stats->philo[pas].alive == 1 && philo_die(stats, pas) == 1)
+		{
+			if (stats->nb_philosoph > 1)
+				philo_eat(stats, pas, stats->nb_philosoph);
+			if ((ft_timestamp() - stats->philo[pas].last_ate)
+				+ stats->time_to_sleep >= stats->time_to_die)
+				philo_think(stats, pas);
+			else
+				philo_sleep(stats, pas);
+		}
 	}
-	while (stats->philo[pas].alive == 1 && stats->to_eat == 0
-		&& philo_die(stats, pas) == 1)
+	else
 	{
-		if (stats->nb_philosoph > 1)
-			philo_eat(stats, pas, stats->nb_philosoph);
-		if ((ft_timestamp() - stats->philo[pas].last_ate)
-			+ stats->time_to_sleep >= stats->time_to_die)
-			philo_think(stats, pas);
-		else
-			philo_sleep(stats, pas);
+		while (stats->philo[pas].alive == 1 && philo_die(stats, pas) == 1)
+		{
+			if (stats->nb_philosoph > 1)
+				philo_eat(stats, pas, stats->nb_philosoph);
+			if ((ft_timestamp() - stats->philo[pas].last_ate)
+				+ stats->time_to_sleep >= stats->time_to_die)
+				philo_think(stats, pas);
+			else
+				philo_sleep(stats, pas);
+		}
 	}
 }
