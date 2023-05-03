@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 16:57:00 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/03 18:36:32 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/03 18:44:08 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ int	philo_die(t_stats *stats, long long pas)
 		pthread_mutex_lock(&stats->mutex);
 		if (stats->death == 0)
 			printf("%lli\t%lli died\n", ft_timestamp()
-				- stats->philo[pas].start_time, pas);
+				- stats->philo[pas].start_time, pas + 1);
 		stats->death = 1;
 		stats->philo[pas].alive = 0;
 		while (++pos < stats->nb_philosoph)
@@ -53,9 +53,9 @@ void	philo_eat(t_stats *stats, long long pas, long long num)
 			stats->philo[pas].fork_avail = 0;
 			stats->philo[(pas + 1) % num].fork_avail = 0;
 			printf("%lli\t%lli has taken a fork\n", stats->philo[pas].last_ate
-				- stats->philo[pas].start_time, pas);
+				- stats->philo[pas].start_time, pas + 1);
 			printf("%lli\t%lli is eating\n", stats->philo[pas].last_ate
-				- stats->philo[pas].start_time, pas);
+				- stats->philo[pas].start_time, pas + 1);
 			pthread_mutex_unlock(&stats->mutex);
 			wait_time(stats->time_to_eat, stats, pas);
 			pthread_mutex_unlock(&stats->philo[pas].fork);
@@ -75,7 +75,7 @@ void	philo_sleep(t_stats *stats, long long pas)
 	{
 		pthread_mutex_lock(&stats->mutex);
 		printf("%lli\t%lli is sleeping\n", ft_timestamp()
-			- stats->philo[pas].start_time, pas);
+			- stats->philo[pas].start_time, pas + 1);
 		pthread_mutex_unlock(&stats->mutex);
 		wait_time(stats->time_to_sleep, stats, pas);
 		philo_die(stats, pas);
@@ -89,7 +89,7 @@ void	philo_think(t_stats *stats, long long pas)
 	{
 		pthread_mutex_lock(&stats->mutex);
 		printf("%lli\t%lli is thinking\n", ft_timestamp()
-			- stats->philo[pas].start_time, pas);
+			- stats->philo[pas].start_time, pas + 1);
 		pthread_mutex_unlock(&stats->mutex);
 		if (stats->nb_philosoph > 1)
 		{

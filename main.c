@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 14:12:56 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/03 18:24:56 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/03 18:42:08 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ int	ft_phil_init(int argc, char **argv, t_stats *stats)
 	stats->time_to_eat = ft_atoi(argv[3]);
 	stats->time_to_sleep = ft_atoi(argv[4]);
 	stats->to_eat = 0;
-	stats->pos = -1;
+	stats->pos = 0;
 	if (argc == 6)
 		stats->to_eat = ft_atoi(argv[5]);
 	stats->philo = malloc(sizeof(t_philosph) * stats->nb_philosoph);
@@ -49,7 +49,7 @@ void	*philo_start(void *stat)
 	stats = (struct s_stats *)stat;
 	pthread_mutex_lock(&stats->mutex);
 	stats->pos += 1;
-	pas = stats->pos;
+	pas = stats->pos - 1;
 	pthread_mutex_unlock(&stats->mutex);
 	stats->philo[pas].start_time = ft_timestamp();
 	stats->philo[pas].last_ate = ft_timestamp();
