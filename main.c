@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 14:12:56 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/03 18:04:26 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/03 18:24:56 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ int	ft_phil_init(int argc, char **argv, t_stats *stats)
 		stats->philo[pos].last_ate = 0;
 		stats->philo[pos].start_time = 0;
 		stats->philo[pos].alive = 1;
+		stats->philo[pos].fork_avail = 1;
 		pthread_mutex_init(&stats->philo[pos].fork, NULL);
 	}
 	return (0);
