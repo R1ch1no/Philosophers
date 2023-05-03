@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 16:57:00 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/03 13:33:23 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/03 18:03:53 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,19 +16,24 @@
 int	philo_die(t_stats *stats, long long pas)
 {
 	long long	last_ate;
+	long long	pos;
 	long long	possible_eat;
 
 	last_ate = stats->philo[pas].last_ate;
 	possible_eat = ft_timestamp();
+	pos = -1;
 	if ((possible_eat - last_ate) >= stats->time_to_die)
 	{
 		pthread_mutex_lock(&stats->mutex);
-		printf("%lli\t%lli has died\n", ft_timestamp()
+		if (stats->death == 0)
+			printf("%lli\t%lli died\n", ft_timestamp()
 				- stats->philo[pas].start_time, pas);
 		stats->death = 1;
 		stats->philo[pas].alive = 0;
+		while (++pos < stats->nb_philosoph)
+			stats->philo[pos].alive = 0;
 		pthread_mutex_unlock(&stats->mutex);
-		exit(0);
+		return (0);
 	}
 	return (1);
 }
@@ -36,26 +41,27 @@ int	philo_die(t_stats *stats, long long pas)
 //philosopher eats
 int	philo_eat(t_stats *stats, long long pas, long long num)
 {
+	philo_die(stats, pas);
 	if (pthread_mutex_lock(&stats->philo[pas].fork) == 0
 		&& pthread_mutex_lock(&stats->philo[((pas + 1)
-				% stats->nb_philosoph)].fork) == 0 && philo_die(stats, pas) == 1
-		&& (stats->death == 0 && stats->nb_philosoph > 1
-			&& stats->philo[pas].ate == 0))
+					% stats->nb_philosoph)].fork) == 0)
 	{
-		stats->philo[pas].last_ate = ft_timestamp();
-		stats->philo[pas].think = 0;
-		stats->philo[pas].nb_ate += 1;
-		stats->philo[pas].ate = 1;
-		pthread_mutex_lock(&stats->mutex);
-		printf("%lli\t%lli has taken a fork\n", stats->philo[pas].last_ate
+		if (philo_die(stats, pas) == 1 && (stats->death == 0
+				&& stats->nb_philosoph > 1))
+		{
+			stats->philo[pas].last_ate = ft_timestamp();
+			stats->philo[pas].nb_ate += 1;
+			pthread_mutex_lock(&stats->mutex);
+			printf("%lli\t%lli has taken a fork\n", stats->philo[pas].last_ate
 				- stats->philo[pas].start_time, pas);
-		printf("%lli\t%lli is eating\n", stats->philo[pas].last_ate
+			printf("%lli\t%lli is eating\n", stats->philo[pas].last_ate
 				- stats->philo[pas].start_time, pas);
-		pthread_mutex_unlock(&stats->mutex);
-		wait_time(stats->time_to_eat);
-		pthread_mutex_unlock(&stats->philo[pas].fork);
-		pthread_mutex_unlock(&stats->philo[(pas + 1) % num].fork);
-		return (0);
+			pthread_mutex_unlock(&stats->mutex);
+			wait_time(stats->time_to_eat, stats, pas);
+			pthread_mutex_unlock(&stats->philo[pas].fork);
+			pthread_mutex_unlock(&stats->philo[(pas + 1) % num].fork);
+			return (0);
+		}
 	}
 	return (1);
 }
@@ -65,30 +71,35 @@ void	philo_sleep(t_stats *stats, long long pas)
 {
 	if (stats->philo[pas].alive == 1)
 	{
-		stats->philo[pas].think = 0;
-		stats->philo[pas].ate = 0;
 		pthread_mutex_lock(&stats->mutex);
 		printf("%lli\t%lli is sleeping\n", ft_timestamp()
-				- stats->philo[pas].start_time, pas);
+			- stats->philo[pas].start_time, pas);
 		pthread_mutex_unlock(&stats->mutex);
-		wait_time(stats->time_to_sleep);
+		wait_time(stats->time_to_sleep, stats, pas);
+		philo_die(stats, pas);
 	}
 }
 
 //make philosopher think
 void	philo_think(t_stats *stats, long long pas)
 {
-	if (stats->philo[pas].think == 0 && stats->philo[pas].alive == 1)
+	if (stats->philo[pas].alive == 1)
 	{
-		stats->philo[pas].think = 1;
-		stats->philo[pas].ate = 0;
 		pthread_mutex_lock(&stats->mutex);
 		printf("%lli\t%lli is thinking\n", ft_timestamp()
-				- stats->philo[pas].start_time, pas);
+			- stats->philo[pas].start_time, pas);
 		pthread_mutex_unlock(&stats->mutex);
+		while (pthread_mutex_lock(&stats->philo[pas].fork) != 0
+			&& pthread_mutex_lock(&stats->philo[((pas + 1)
+						% stats->nb_philosoph)].fork) != 0)
+		{
+			write(1, "wtf\n", 4);
+			wait_time(10, stats, pas);
+		}
+		pthread_mutex_unlock(&stats->philo[pas].fork);
+		pthread_mutex_unlock(&stats->philo[((pas + 1)
+				% stats->nb_philosoph)].fork);
 	}
-	else
-		stats->philo[pas].ate = 0;
 }
 
 //tell the project what to do
@@ -96,16 +107,16 @@ void	ft_commander(t_stats *stats, long long pas)
 {
 	if (stats->to_eat > 0)
 	{
-		while (stats->philo[pas].nb_ate <= stats->to_eat
+		while (stats->philo[pas].nb_ate < stats->to_eat
 			&& stats->philo[pas].alive == 1 && philo_die(stats, pas) == 1)
 		{
-			if (stats->nb_philosoph > 1)
+			if (stats->nb_philosoph > 1
+				&& stats->philo[pas].nb_ate < stats->to_eat)
 				philo_eat(stats, pas, stats->nb_philosoph);
-			if ((ft_timestamp() - stats->philo[pas].last_ate)
-				+ stats->time_to_sleep >= stats->time_to_die)
-				philo_think(stats, pas);
-			else
+			if (stats->philo[pas].nb_ate < stats->to_eat)
 				philo_sleep(stats, pas);
+			if (stats->philo[pas].nb_ate < stats->to_eat)
+				philo_think(stats, pas);
 		}
 	}
 	else
@@ -114,11 +125,8 @@ void	ft_commander(t_stats *stats, long long pas)
 		{
 			if (stats->nb_philosoph > 1)
 				philo_eat(stats, pas, stats->nb_philosoph);
-			if ((ft_timestamp() - stats->philo[pas].last_ate)
-				+ stats->time_to_sleep >= stats->time_to_die)
-				philo_think(stats, pas);
-			else
-				philo_sleep(stats, pas);
+			philo_sleep(stats, pas);
+			philo_think(stats, pas);
 		}
 	}
 }

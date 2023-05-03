@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 14:12:56 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/01 17:10:18 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/03 18:04:26 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,6 @@ int	ft_phil_init(int argc, char **argv, t_stats *stats)
 		stats->philo[pos].nb_ate = 0;
 		stats->philo[pos].last_ate = 0;
 		stats->philo[pos].start_time = 0;
-		stats->philo[pos].think = 0;
 		stats->philo[pos].alive = 1;
 		pthread_mutex_init(&stats->philo[pos].fork, NULL);
 	}
@@ -51,7 +50,6 @@ void	*philo_start(void *stat)
 	stats->pos += 1;
 	pas = stats->pos;
 	pthread_mutex_unlock(&stats->mutex);
-	stats->philo[pas].ate = 0;
 	stats->philo[pas].start_time = ft_timestamp();
 	stats->philo[pas].last_ate = ft_timestamp();
 	ft_commander(stats, pas);

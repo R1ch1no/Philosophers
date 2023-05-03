@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 13:32:24 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/04/30 15:20:10 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/03 18:01:54 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,13 +24,14 @@ long long	ft_timestamp(void)
 }
 
 //replacement of usleep
-void	wait_time(long long waiting)
+void	wait_time(long long waiting, t_stats *stats, long long pas)
 {
 	long long	timestamp_begin;
 	long long	timestamp_end;
 
 	timestamp_begin = ft_timestamp();
 	timestamp_end = timestamp_begin;
-	while ((timestamp_end - timestamp_begin) <= waiting)
+	while ((timestamp_end - timestamp_begin) <= waiting && philo_die(stats,
+			pas) == 1)
 		timestamp_end = ft_timestamp();
 }
