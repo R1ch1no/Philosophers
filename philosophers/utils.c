@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils_one.c                                        :+:      :+:    :+:   */
+/*   utils.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:53:33 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/04/30 15:20:09 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/04 11:08:47 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,64 +41,28 @@ int	ft_atoi(const char *str)
 	return (result * sign);
 }
 
-static int	ft_intlen(int num)
+long long	ft_timestamp(void)
 {
-	int	len;
+	struct timeval	tv;
+	long long		timestamp;
 
-	len = 0;
-	if (num < 0)
-		len++;
-	while (num / 10)
-	{
-		len++;
-		num = num / 10;
-	}
-	return (len + 1);
+	gettimeofday(&tv, NULL);
+	timestamp = (((tv.tv_sec * 1000000) + tv.tv_usec) / 1000);
+	return (timestamp);
 }
 
-static char	*ft_putnbr(int nb, char *str, int l, int ilen)
+//replacement of usleep
+void	wait_time(long long waiting, t_stats *stats, long long pas)
 {
-	if (nb == -2147483648)
-	{
-		l++;
-		ft_putnbr(nb / 10, str, l, ilen);
-		str[ilen - l] = '8';
-	}
-	else if (nb < 0)
-	{
-		ft_putnbr(-nb, str, l, ilen);
-	}
-	else if (nb > 9)
-	{
-		l++;
-		ft_putnbr(nb / 10, str, l, ilen);
-		str[ilen - l] = 48 + nb % 10;
-	}
-	else
-	{
-		l++;
-		str[ilen - l] = (48 + nb % 10);
-	}
-	return (str);
-}
+	long long	timestamp_begin;
+	long long	timestamp_end;
 
-//changes int into str
-char	*ft_itoa(int n)
-{
-	char	*istr;
-	int		ilen;
-	int		l;
-
-	ilen = ft_intlen(n);
-	istr = malloc(ilen + 1);
-	l = 0;
-	if (!istr)
-		return (NULL);
-	if (n < 0)
+	timestamp_begin = ft_timestamp();
+	timestamp_end = timestamp_begin;
+	while ((timestamp_end - timestamp_begin) <= waiting && philo_die(stats,
+			pas) == 1)
 	{
-		istr[0] = '-';
+		usleep(1000);
+		timestamp_end = ft_timestamp();
 	}
-	istr = ft_putnbr(n, istr, l, ilen);
-	istr[ilen] = '\0';
-	return (istr);
 }
