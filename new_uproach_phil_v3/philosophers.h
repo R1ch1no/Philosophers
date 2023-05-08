@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:57:19 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/04 11:08:50 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/08 18:01:33 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,10 @@ typedef struct s_philosoph
 	long long		taken_fork;
 	long long		nb_ate;
 	long long		last_ate;
-	int				alive;
 	int				fork_avail;
-	pthread_mutex_t	fork;
+	int				slept;
+	int				think;
+	struct s_stats	*rules;
 }					t_philosph;
 
 typedef struct s_stats
@@ -42,14 +43,17 @@ typedef struct s_stats
 	long long		to_eat;
 	int				death;
 	t_philosph		*philo;
-	pthread_mutex_t	mutex;
+	pthread_mutex_t	eat;
+	pthread_mutex_t	dead;
+	pthread_mutex_t	print;
+	pthread_mutex_t	pause;
 }					t_stats;
-
+void				ft_printer(char *message, t_stats *stats, long long pas);
 int					ft_atoi(const char *str);
 char				*ft_itoa(int n);
 long long			ft_timestamp(void);
 int					philo_die(t_stats *stats, long long pas);
-void				wait_time(long long waiting, t_stats *stats, long long pas);
+int					wait_time(long long waiting, t_stats *stats, long long pas);
 void				ft_commander(t_stats *stat, long long pas);
 
 #endif

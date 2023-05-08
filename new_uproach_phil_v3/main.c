@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 14:12:56 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/04 11:08:54 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/08 18:04:18 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,23 +34,23 @@ int	ft_phil_init(int argc, char **argv, t_stats *stats)
 		stats->philo[pos].nb_ate = 0;
 		stats->philo[pos].last_ate = 0;
 		stats->philo[pos].start_time = 0;
-		stats->philo[pos].alive = 1;
 		stats->philo[pos].fork_avail = 1;
-		pthread_mutex_init(&stats->philo[pos].fork, NULL);
 	}
 	return (0);
 }
 
 void	*philo_start(void *stat)
 {
-	t_stats		*stats;
+	t_philosph		*stats;
 	long long	pas;
 
 	stats = (struct s_stats *)stat;
-	pthread_mutex_lock(&stats->mutex);
+	pthread_mutex_lock(&stats->pause);
 	stats->pos += 1;
 	pas = stats->pos;
-	pthread_mutex_unlock(&stats->mutex);
+	pthread_mutex_unlock(&stats->pause);
+	stats->philo[pas].slept = 0;
+	stats->philo[pas].think = 0;
 	stats->philo[pas].start_time = ft_timestamp();
 	stats->philo[pas].last_ate = ft_timestamp();
 	ft_commander(stats, pas);
@@ -65,7 +65,7 @@ void	ft_start(t_stats *stats)
 	pos = -1;
 	while (++pos < stats->nb_philosoph)
 	{
-		if (pthread_create(&philo[pos], NULL, philo_start, stats) != 0)
+		if (pthread_create(&philo[pos], NULL, philo_start, &stats->philo[pos]) != 0)
 		{
 			write(1, "Thread creation error!\n", 24);
 			--pos;
@@ -105,10 +105,8 @@ int	ft_check_params(int argc, char **argv)
 
 int	main(int argc, char **argv)
 {
-	t_stats		*stats;
-	long long	pos;
+	t_stats	*stats;
 
-	pos = -1;
 	if (ft_check_params(argc, argv) == 1)
 		return (0);
 	stats = malloc(sizeof(t_stats));
@@ -119,12 +117,16 @@ int	main(int argc, char **argv)
 		free(stats);
 		return (0);
 	}
-	pthread_mutex_init(&stats->mutex, NULL);
+	pthread_mutex_init(&stats->dead, NULL);
+	pthread_mutex_init(&stats->print, NULL);
+	pthread_mutex_init(&stats->pause, NULL);
+	pthread_mutex_init(&stats->eat, NULL);
 	stats->death = 0;
 	ft_start(stats);
-	while (++pos < stats->nb_philosoph)
-		pthread_mutex_destroy(&stats->philo[pos].fork);
-	pthread_mutex_destroy(&stats->mutex);
+	pthread_mutex_destroy(&stats->dead);
+	pthread_mutex_destroy(&stats->print);
+	pthread_mutex_destroy(&stats->pause);
+	pthread_mutex_destroy(&stats->eat);
 	free(stats->philo);
 	free(stats);
 	return (0);

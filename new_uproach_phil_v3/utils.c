@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:53:33 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/04 11:08:47 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/08 18:01:32 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,17 +52,26 @@ long long	ft_timestamp(void)
 }
 
 //replacement of usleep
-void	wait_time(long long waiting, t_stats *stats, long long pas)
+int	wait_time(long long waiting, t_stats *stats, long long pas)
 {
 	long long	timestamp_begin;
 	long long	timestamp_end;
 
 	timestamp_begin = ft_timestamp();
 	timestamp_end = timestamp_begin;
-	while ((timestamp_end - timestamp_begin) <= waiting && philo_die(stats,
-			pas) == 1)
+	while ((timestamp_end - timestamp_begin) <= waiting)
 	{
-		usleep(1000);
 		timestamp_end = ft_timestamp();
+		if (philo_die(stats, pas) == 0)
+			return (1);
 	}
+	return (0);
+}
+
+void	ft_printer(char *message, t_stats *stats, long long pas)
+{
+	pthread_mutex_lock(&stats->print);
+	printf("%lli\t%lli\t%s\n", ft_timestamp() - stats->philo[pas].start_time, pas
+		+ 1, message);
+	pthread_mutex_unlock(&stats->print);
 }

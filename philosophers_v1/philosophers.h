@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:57:19 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/08 19:30:37 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/08 17:53:25 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,15 +27,14 @@ typedef struct s_philosoph
 	long long		taken_fork;
 	long long		nb_ate;
 	long long		last_ate;
-	int				left_fork;
-	int				right_fork;
-	int				slept;
-	int				think;
-	struct s_stats	*rules;
+	int				alive;
+	int				fork_avail;
+	pthread_mutex_t	fork;
 }					t_philosph;
 
 typedef struct s_stats
 {
+	long long		pos;
 	long long		nb_philosoph;
 	long long		time_to_eat;
 	long long		time_to_die;
@@ -43,19 +42,14 @@ typedef struct s_stats
 	long long		to_eat;
 	int				death;
 	t_philosph		*philo;
-	pthread_mutex_t	*eat;
-	pthread_mutex_t	dead;
-	pthread_mutex_t	print;
-	pthread_mutex_t	pause;
+	pthread_mutex_t	mutex;
 }					t_stats;
 
-int					philo_die(t_philosph *philo);
-void				ft_printer(char *message, t_philosph *philo);
 int					ft_atoi(const char *str);
 char				*ft_itoa(int n);
 long long			ft_timestamp(void);
-int					philo_die(t_philosph *philo);
-int					wait_time(long long waiting, t_philosph *philo);
-void				ft_commander(t_philosph *philo);
+int					philo_die(t_stats *stats, long long pas);
+void				wait_time(long long waiting, t_stats *stats, long long pas);
+void				ft_commander(t_stats *stat, long long pas);
 
 #endif

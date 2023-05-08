@@ -6,116 +6,105 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 16:57:00 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/07 21:16:57 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/08 19:41:33 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
 //checks if philosopher died of starvation, return 0 when philo died
-int	philo_die(t_stats *stats, long long pas)
+int	philo_die(t_philosph *philo)
 {
 	long long	last_ate;
 	long long	possible_eat;
 
-	last_ate = stats->philo[pas].last_ate;
+	last_ate = philo->last_ate;
 	possible_eat = ft_timestamp();
-	pthread_mutex_lock(&stats->dead);
-	if (stats->death == 1)
+	pthread_mutex_lock(&philo->rules->dead);
+	if (philo->rules->death == 1)
 	{
-		pthread_mutex_unlock(&stats->dead);
+		pthread_mutex_unlock(&philo->rules->dead);
 		return (0);
 	}
-	else
-		pthread_mutex_unlock(&stats->dead);
-	if ((possible_eat - last_ate) >= stats->time_to_die)
+	pthread_mutex_unlock(&philo->rules->dead);
+	if ((possible_eat - last_ate) >= philo->rules->time_to_die)
 	{
-		pthread_mutex_lock(&stats->dead);
-		if (stats->death == 0)
-			ft_printer("died", stats, pas);
-		stats->death = 1;
-		pthread_mutex_unlock(&stats->dead);
+		pthread_mutex_lock(&philo->rules->dead);
+		if (philo->rules->death == 0)
+			ft_printer("died", philo);
+		philo->rules->death = 1;
+		pthread_mutex_unlock(&philo->rules->dead);
 		return (0);
 	}
 	return (1);
 }
 
-//philosopher eats
-void	philo_eat(t_stats *stats, long long pas, long long num)
+//philospher sleeps
+void	philo_sleep(t_philosph *philo)
 {
-	pthread_mutex_lock(&stats->eat);
-	if (philo_die(stats, pas) == 1 && stats->nb_philosoph > 1
-		&& stats->philo[pas].fork_avail == 1 && stats->philo[(pas + 1)
-		% num].fork_avail == 1)
+	if (philo_die(philo) == 1)
 	{
-		stats->philo[pas].fork_avail = 0;
-		stats->philo[(pas + 1) % num].fork_avail = 0;
-		pthread_mutex_unlock(&stats->eat);
-		stats->philo[pas].slept = 0;
-		stats->philo[pas].think = 0;
-		stats->philo[pas].nb_ate += 1;
-		stats->philo[pas].last_ate = ft_timestamp();
-		ft_printer("has taken a fork", stats, pas);
-		ft_printer("is eating", stats, pas);
-		if (wait_time(stats->time_to_eat, stats, pas) == 1)
+		philo->slept = 1;
+		ft_printer("is sleeping", philo);
+		if (wait_time(philo->rules->time_to_sleep, philo) == 1)
 			return ;
-		pthread_mutex_lock(&stats->eat);
-		stats->philo[pas].fork_avail = 1;
-		stats->philo[(pas + 1) % num].fork_avail = 1;
-		pthread_mutex_unlock(&stats->eat);
+	}
+}
+
+//philosopher eats
+void	philo_eat(t_philosph *philo)
+{
+	pthread_mutex_lock(&philo->rules->eat[philo->left_fork]);
+	if (philo_die(philo) == 0)
+		if (philo_die(philo) == 0)
+		{
+			pthread_mutex_unlock(&philo->rules->eat[philo->right_fork]);
+			return ;
+		}
+	pthread_mutex_lock(&philo->rules->eat[philo->right_fork]);
+	if (philo_die(philo) == 0)
+	{
+		pthread_mutex_unlock(&philo->rules->eat[philo->left_fork]);
+		pthread_mutex_unlock(&philo->rules->eat[philo->right_fork]);
 		return ;
 	}
-	else
-		pthread_mutex_unlock(&stats->eat);
-}
-
-//philospher sleeps
-void	philo_sleep(t_stats *stats, long long pas)
-{
-	if (philo_die(stats, pas) == 1 && stats->philo[pas].slept == 0)
-	{
-		stats->philo[pas].slept = 1;
-		ft_printer("is sleeping", stats, pas);
-		if (wait_time(stats->time_to_sleep, stats, pas) == 1)
-			return ;
-	}
-}
-
-//make philosopher think
-void	philo_think(t_stats *stats, long long pas)
-{
-	if (philo_die(stats, pas) == 1 && stats->philo[pas].think == 0)
-	{
-		stats->philo[pas].think = 1;
-		ft_printer("is thinking", stats, pas);
-	}
+	ft_printer("has taken a fork", philo);
+	philo->last_ate = ft_timestamp();
+	ft_printer("is eating", philo);
+	if (wait_time(philo->rules->time_to_eat, philo) == 1)
+		return ;
+	pthread_mutex_unlock(&philo->rules->eat[philo->left_fork]);
+	pthread_mutex_unlock(&philo->rules->eat[philo->right_fork]);
+	philo->slept = 0;
+	philo->think = 0;
+	philo->nb_ate += 1;
 }
 
 //tell the project what to do
-void	ft_commander(t_stats *stats, long long pas)
+void	ft_commander(t_philosph *philo)
 {
-	if (stats->to_eat > 0)
+	if (philo->rules->to_eat > 0)
 	{
-		while (stats->philo[pas].nb_ate < stats->to_eat && philo_die(stats,
-				pas) == 1)
+		while (philo->nb_ate < philo->rules->to_eat && philo_die(philo) == 1)
 		{
-			if (stats->nb_philosoph > 1
-				&& stats->philo[pas].nb_ate < stats->to_eat)
-				philo_eat(stats, pas, stats->nb_philosoph);
-			if (stats->philo[pas].nb_ate < stats->to_eat)
-				philo_sleep(stats, pas);
-			if (stats->philo[pas].nb_ate < stats->to_eat)
-				philo_think(stats, pas);
+			if (philo->rules->nb_philosoph > 1
+				&& philo->nb_ate < philo->rules->to_eat)
+				philo_eat(philo);
+			if (philo->nb_ate < philo->rules->to_eat)
+				philo_sleep(philo);
+			if (philo_die(philo) == 1 && philo->nb_ate < philo->rules->to_eat)
+				ft_printer("is thinking", philo);
 		}
 	}
 	else
 	{
-		while (philo_die(stats, pas) == 1)
+		while (philo_die(philo) == 1)
 		{
-			if (stats->nb_philosoph > 1)
-				philo_eat(stats, pas, stats->nb_philosoph);
-			philo_sleep(stats, pas);
-			philo_think(stats, pas);
+			if (philo->rules->nb_philosoph > 1)
+				philo_eat(philo);
+			philo_sleep(philo);
+			if (philo_die(philo) == 1)
+				ft_printer("is thinking", philo);
 		}
 	}
 }
