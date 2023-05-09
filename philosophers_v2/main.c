@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 14:12:56 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/08 18:04:18 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/09 11:40:33 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,18 +41,17 @@ int	ft_phil_init(int argc, char **argv, t_stats *stats)
 
 void	*philo_start(void *stat)
 {
-	t_philosph		*stats;
+	t_philosph	*stats;
 	long long	pas;
 
 	stats = (struct s_stats *)stat;
 	pthread_mutex_lock(&stats->pause);
 	stats->pos += 1;
-	pas = stats->pos;
-	pthread_mutex_unlock(&stats->pause);
 	stats->philo[pas].slept = 0;
 	stats->philo[pas].think = 0;
 	stats->philo[pas].start_time = ft_timestamp();
 	stats->philo[pas].last_ate = ft_timestamp();
+	pthread_mutex_unlock(&stats->pause);
 	ft_commander(stats, pas);
 	return (NULL);
 }
@@ -65,7 +64,8 @@ void	ft_start(t_stats *stats)
 	pos = -1;
 	while (++pos < stats->nb_philosoph)
 	{
-		if (pthread_create(&philo[pos], NULL, philo_start, &stats->philo[pos]) != 0)
+		if (pthread_create(&philo[pos], NULL, philo_start,
+				&stats->philo[pos]) != 0)
 		{
 			write(1, "Thread creation error!\n", 24);
 			--pos;

@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:57:19 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/08 19:30:37 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/09 18:59:09 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,13 +49,21 @@ typedef struct s_stats
 	pthread_mutex_t	pause;
 }					t_stats;
 
-int					philo_die(t_philosph *philo);
-void				ft_printer(char *message, t_philosph *philo);
+int					ft_mutex_init(t_stats *stats);
+int					ft_check_params(int argc, char **argv);
+int					ft_mutex_init(t_stats *stats);
+int					check_nums(char **argv);
 int					ft_atoi(const char *str);
+int					is_dead(t_philosph *philo);
 char				*ft_itoa(int n);
+void				sleep_think(t_philosph *philo);
+void				ft_printer(char *message, t_stats *stats, long long pos);
+void				mutex_destroy_join(long pos, t_stats *stats,
+						pthread_t *philo);
+void				ft_start(t_stats *stats);
+void				philo_die(t_stats *stats);
+void				wait_time(long long waiting);
+void				*ft_commander(void *philo);
 long long			ft_timestamp(void);
-int					philo_die(t_philosph *philo);
-int					wait_time(long long waiting, t_philosph *philo);
-void				ft_commander(t_philosph *philo);
 
 #endif

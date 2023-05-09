@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils.c                                            :+:      :+:    :+:   */
+/*   utils_one.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:53:33 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/08 19:37:54 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/09 18:59:08 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ long long	ft_timestamp(void)
 }
 
 //replacement of usleep
-int	wait_time(long long waiting, t_philosph *philo)
+void	wait_time(long long waiting)
 {
 	long long	timestamp_begin;
 	long long	timestamp_end;
@@ -60,18 +60,34 @@ int	wait_time(long long waiting, t_philosph *philo)
 	timestamp_begin = ft_timestamp();
 	timestamp_end = timestamp_begin;
 	while ((timestamp_end - timestamp_begin) <= waiting)
-	{
 		timestamp_end = ft_timestamp();
-		if (philo_die(philo) == 0)
-			return (1);
-	}
-	return (0);
 }
 
-void	ft_printer(char *message, t_philosph *philo)
+void	ft_printer(char *message, t_stats *stats, long long pos)
 {
-	pthread_mutex_lock(&philo->rules->print);
-	printf("%lli\t%lli\t%s\n", ft_timestamp() - philo->start_time,
-			philo->position + 1, message);
-	pthread_mutex_unlock(&philo->rules->print);
+	pthread_mutex_lock(&stats->print);
+	printf("%lli\t%lli\t%s\n", ft_timestamp() - stats->philo[pos].start_time,
+		pos + 1, message);
+	pthread_mutex_unlock(&stats->print);
+}
+
+int	check_nums(char **argv)
+{
+	int	j;
+	int	i;
+
+	j = 0;
+	while (argv[++j])
+	{
+		i = -1;
+		while (argv[j][++i])
+		{
+			if (argv[j][i] < '0' || argv[j][i] > '9')
+			{
+				write(1, "Non-numeric paramaters are not valid!\n", 38);
+				return (1);
+			}
+		}
+	}
+	return (0);
 }
