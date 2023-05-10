@@ -6,11 +6,28 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/09 17:08:24 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/09 19:02:10 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/10 09:52:42 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
+
+int	ft_done_eating(t_stats *stats)
+{
+	long long	pos;
+	long long	ate;
+
+	ate = 0;
+	pos = -1;
+	while (++pos < stats->nb_philosoph)
+	{
+		if (stats->philo[pos].nb_ate == stats->to_eat)
+			ate++;
+	}
+	if (ate == stats->to_eat)
+		return (1);
+	return (0);
+}
 
 void	sleep_think(t_philosph *philo)
 {

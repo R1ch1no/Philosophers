@@ -6,13 +6,13 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 14:12:56 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/09 18:57:49 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/10 09:52:46 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
-void	mutex_destroy_join(long pos, t_stats *stats, pthread_t *philo)
+int	mutex_destroy_join(long pos, t_stats *stats, pthread_t *philo)
 {
 	while (--pos > -1)
 	{
@@ -25,7 +25,6 @@ void	mutex_destroy_join(long pos, t_stats *stats, pthread_t *philo)
 	pos = -1;
 	pthread_mutex_destroy(&stats->dead);
 	pthread_mutex_destroy(&stats->print);
-	pthread_mutex_destroy(&stats->pause);
 	while (++pos < stats->nb_philosoph)
 	{
 		pthread_mutex_destroy(&stats->eat[pos]);
@@ -33,6 +32,7 @@ void	mutex_destroy_join(long pos, t_stats *stats, pthread_t *philo)
 	free(stats->eat);
 	free(stats->philo);
 	free(stats);
+	return (0);
 }
 
 int	ft_mutex_init(t_stats *stats)
@@ -41,33 +41,27 @@ int	ft_mutex_init(t_stats *stats)
 
 	pos = -1;
 	if (pthread_mutex_init(&stats->dead, NULL) != 0)
-		return (write(1, "Mutex init error !\n", 29) && 1);
+		return (write(1, "Mutex init error !\n", 20) && 1);
 	if (pthread_mutex_init(&stats->print, NULL) != 0)
 	{
 		pthread_mutex_destroy(&stats->dead);
-		return (write(1, "Mutex init error !\n", 29) && 1);
-	}
-	if (pthread_mutex_init(&stats->pause, NULL) != 0)
-	{
-		pthread_mutex_destroy(&stats->dead);
-		pthread_mutex_destroy(&stats->print);
-		return (write(1, "Mutex init error !\n", 29) && 1);
+		return (write(1, "Mutex init error !\n", 20) && 1);
 	}
 	while (++pos < stats->nb_philosoph)
 	{
-		pthread_mutex_init(&stats->eat[pos], NULL);
-		if (pthread_mutex_init(stats->eat, NULL) != 0)
+		if (pthread_mutex_init(&stats->eat[pos], NULL) != 0)
 		{
 			pthread_mutex_destroy(&stats->dead);
 			pthread_mutex_destroy(&stats->print);
-			pthread_mutex_destroy(&stats->pause);
-			return (write(1, "Mutex init error !\n", 29) && 1);
+			while (--pos > 0)
+				pthread_mutex_destroy(&stats->eat[pos]);
+			return (write(1, "Mutex init error !\n", 20) && 1);
 		}
 	}
 	return (0);
 }
 
-void	ft_start(t_stats *stats)
+int	ft_start(t_stats *stats)
 {
 	long		pos;
 	pthread_t	philo[500];
@@ -78,6 +72,10 @@ void	ft_start(t_stats *stats)
 		return ;
 	while (++pos < stats->nb_philosoph)
 	{
+		stats->philo[pos].position = pos;
+		stats->philo[pos].nb_ate = 0;
+		stats->philo[pos].slept = 0;
+		stats->philo[pos].think = 0;
 		stats->philo[pos].last_ate = ft_timestamp();
 		stats->philo[pos].start_time = ft_timestamp();
 		if (pthread_create(&philo[pos], NULL, ft_commander,
@@ -85,7 +83,7 @@ void	ft_start(t_stats *stats)
 		{
 			write(1, "Thread creation error!\n", 24);
 			--pos;
-			break ;
+			return (mutex_destroy_join(pos, stats, philo) && 1);
 		}
 	}
 	philo_die(stats);
@@ -101,20 +99,20 @@ int	ft_phil_init(int argc, char **argv, t_stats *stats)
 	stats->time_to_die = ft_atoi(argv[2]);
 	stats->time_to_eat = ft_atoi(argv[3]);
 	stats->time_to_sleep = ft_atoi(argv[4]);
-	stats->to_eat = -1;
 	if (argc == 6)
 		stats->to_eat = ft_atoi(argv[5]);
 	stats->philo = malloc(sizeof(t_philosph) * stats->nb_philosoph);
-	stats->eat = malloc(sizeof(pthread_mutex_t) * stats->nb_philosoph);
-	if (!stats->philo || !stats->eat)
+	if (!stats->philo)
 		return (write(1, "Allocation error!\n", 18) && 1);
+	stats->eat = malloc(sizeof(pthread_mutex_t) * stats->nb_philosoph);
+	if (!stats->eat)
+	{
+		free(stats->philo);
+		return (write(1, "Allocation error!\n", 18) && 1);
+	}
 	while (++pos < stats->nb_philosoph)
 	{
 		stats->philo[pos].rules = stats;
-		stats->philo[pos].position = pos;
-		stats->philo[pos].nb_ate = 0;
-		stats->philo[pos].slept = 0;
-		stats->philo[pos].think = 0;
 		stats->philo[pos].left_fork = pos;
 		stats->philo[pos].right_fork = (pos + 1) % stats->nb_philosoph;
 	}
@@ -130,11 +128,17 @@ int	main(int argc, char **argv)
 	stats = malloc(sizeof(t_stats));
 	if (!stats)
 		return (write(1, "Could not allocate stats!\n", 26) && 0);
+	stats->to_eat = -1;
 	if (ft_phil_init(argc, argv, stats) == 1)
 	{
 		free(stats);
 		return (0);
 	}
-	ft_start(stats);
+	if (ft_start(stats) == 1)
+	{
+		free(stats->eat);
+		free(stats->philo);
+		free(stats);
+	}
 	return (0);
 }

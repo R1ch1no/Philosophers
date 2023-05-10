@@ -6,37 +6,34 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 16:57:00 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/09 19:05:40 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/10 09:52:47 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
-//checks if philosopher died of starvation, return 0 when philo died
+//checks if philosopher died of starvation
 void	philo_die(t_stats *stats)
 {
 	long long	pos;
-	long long	ate;
 
-	ate = 0;
-	while (ate <= stats->time_to_eat)
+	while (pos)
 	{
-		pos = 0;
+		pos = -1;
 		pthread_mutex_lock(&stats->dead);
-		while (stats->death == 0 && pos < stats->nb_philosoph)
+		while (stats->death == 0 && ++pos < stats->nb_philosoph)
 		{
 			pthread_mutex_unlock(&stats->dead);
-			if (stats->philo[pos].nb_ate == stats->to_eat)
-				++ate;
+			if (ft_done_eating(stats) == 1)
+				return ;
 			if (ft_timestamp()
 				- stats->philo[pos].last_ate >= stats->time_to_die)
 			{
+				pthread_mutex_lock(&stats->dead);
 				stats->death = 1;
-				ft_printer("died", stats, pos);
-				return ;
+				pthread_mutex_unlock(&stats->dead);
+				return (ft_printer("died", stats, pos));
 			}
-			pos++;
-			wait_time(1);
 			pthread_mutex_lock(&stats->dead);
 		}
 		pthread_mutex_unlock(&stats->dead);
@@ -45,13 +42,27 @@ void	philo_die(t_stats *stats)
 
 int	forking(t_philosph *philo)
 {
-	pthread_mutex_lock(&philo->rules->eat[philo->left_fork]);
-	pthread_mutex_lock(&philo->rules->eat[philo->right_fork]);
-	if (is_dead(philo) == 1)
+	if (philo->position % 2 == 0)
 	{
-		pthread_mutex_unlock(&philo->rules->eat[philo->left_fork]);
-		pthread_mutex_unlock(&philo->rules->eat[philo->right_fork]);
-		return (1);
+		pthread_mutex_lock(&philo->rules->eat[philo->left_fork]);
+		pthread_mutex_lock(&philo->rules->eat[philo->right_fork]);
+		if (is_dead(philo) == 1)
+		{
+			pthread_mutex_unlock(&philo->rules->eat[philo->left_fork]);
+			pthread_mutex_unlock(&philo->rules->eat[philo->right_fork]);
+			return (1);
+		}
+	}
+	else
+	{
+		pthread_mutex_lock(&philo->rules->eat[philo->right_fork]);
+		pthread_mutex_lock(&philo->rules->eat[philo->left_fork]);
+		if (is_dead(philo) == 1)
+		{
+			pthread_mutex_unlock(&philo->rules->eat[philo->right_fork]);
+			pthread_mutex_unlock(&philo->rules->eat[philo->left_fork]);
+			return (1);
+		}
 	}
 	return (0);
 }
