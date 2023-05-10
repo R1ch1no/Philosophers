@@ -6,31 +6,58 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/09 17:08:24 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/10 09:52:42 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/10 19:28:19 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
-int	ft_done_eating(t_stats *stats)
+int	mutex_init_part_two(t_stats *stats)
 {
 	long long	pos;
-	long long	ate;
 
-	ate = 0;
 	pos = -1;
 	while (++pos < stats->nb_philosoph)
 	{
-		if (stats->philo[pos].nb_ate == stats->to_eat)
-			ate++;
+		if (pthread_mutex_init(&stats->eat[pos], NULL) != 0)
+		{
+			pthread_mutex_destroy(&stats->wait);
+			pthread_mutex_destroy(&stats->count);
+			pthread_mutex_destroy(&stats->dead);
+			pthread_mutex_destroy(&stats->print);
+			while (--pos > 0)
+				pthread_mutex_destroy(&stats->eat[pos]);
+			return (write(1, "Mutex init error !", 20) && 1);
+		}
 	}
-	if (ate == stats->to_eat)
+	return (0);
+}
+
+int	ft_done_eating(t_stats *stats, long long pos)
+{
+	(void)pos;
+	if (stats->to_eat == -1)
+		return (0);
+	pthread_mutex_lock(&stats->count);
+	if (stats->done_eat > 0 && (stats->done_eat % ((stats->nb_philosoph)
+				* stats->to_eat)) == 0)
+	{
+		pthread_mutex_unlock(&stats->count);
 		return (1);
+	}
+	pthread_mutex_unlock(&stats->count);
 	return (0);
 }
 
 void	sleep_think(t_philosph *philo)
 {
+	pthread_mutex_lock(&philo->rules->dead);
+	if (philo->rules->death == 1)
+	{
+		pthread_mutex_unlock(&philo->rules->dead);
+		return ;
+	}
+	pthread_mutex_unlock(&philo->rules->dead);
 	if (philo->slept == 0 && is_dead(philo) == 0
 		&& (philo->nb_ate < philo->rules->to_eat || philo->rules->to_eat == -1))
 	{

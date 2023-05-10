@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 14:12:56 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/10 09:52:46 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/10 18:38:16 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,13 @@ int	mutex_destroy_join(long pos, t_stats *stats, pthread_t *philo)
 		if (pthread_join(philo[pos], NULL) != 0)
 		{
 			write(1, "Thread joining error!\n", 22);
-			return ;
+			return (0);
 		}
 	}
 	pos = -1;
 	pthread_mutex_destroy(&stats->dead);
 	pthread_mutex_destroy(&stats->print);
+	pthread_mutex_destroy(&stats->count);
 	while (++pos < stats->nb_philosoph)
 	{
 		pthread_mutex_destroy(&stats->eat[pos]);
@@ -47,18 +48,20 @@ int	ft_mutex_init(t_stats *stats)
 		pthread_mutex_destroy(&stats->dead);
 		return (write(1, "Mutex init error !\n", 20) && 1);
 	}
-	while (++pos < stats->nb_philosoph)
+	if (pthread_mutex_init(&stats->count, NULL) != 0)
 	{
-		if (pthread_mutex_init(&stats->eat[pos], NULL) != 0)
-		{
-			pthread_mutex_destroy(&stats->dead);
-			pthread_mutex_destroy(&stats->print);
-			while (--pos > 0)
-				pthread_mutex_destroy(&stats->eat[pos]);
-			return (write(1, "Mutex init error !\n", 20) && 1);
-		}
+		pthread_mutex_destroy(&stats->print);
+		pthread_mutex_destroy(&stats->dead);
+		return (write(1, "Mutex init error !\n", 20) && 1);
 	}
-	return (0);
+	if (pthread_mutex_init(&stats->wait, NULL) != 0)
+	{
+		pthread_mutex_destroy(&stats->count);
+		pthread_mutex_destroy(&stats->print);
+		pthread_mutex_destroy(&stats->dead);
+		return (write(1, "Mutex init error !\n", 20) && 1);
+	}
+	return (mutex_init_part_two(stats));
 }
 
 int	ft_start(t_stats *stats)
@@ -69,7 +72,7 @@ int	ft_start(t_stats *stats)
 	pos = -1;
 	stats->death = 0;
 	if (ft_mutex_init(stats) == 1)
-		return ;
+		return (1);
 	while (++pos < stats->nb_philosoph)
 	{
 		stats->philo[pos].position = pos;
@@ -87,7 +90,7 @@ int	ft_start(t_stats *stats)
 		}
 	}
 	philo_die(stats);
-	mutex_destroy_join(pos, stats, philo);
+	return (0);
 }
 
 int	ft_phil_init(int argc, char **argv, t_stats *stats)
@@ -129,6 +132,8 @@ int	main(int argc, char **argv)
 	if (!stats)
 		return (write(1, "Could not allocate stats!\n", 26) && 0);
 	stats->to_eat = -1;
+	stats->done_eat = 0;
+	stats->all_ate = 0;
 	if (ft_phil_init(argc, argv, stats) == 1)
 	{
 		free(stats);
