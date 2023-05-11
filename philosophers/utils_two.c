@@ -27,7 +27,7 @@ int	mutex_init_part_two(t_stats *stats)
 			pthread_mutex_destroy(&stats->print);
 			while (--pos > 0)
 				pthread_mutex_destroy(&stats->eat[pos]);
-			return (write(1, "Mutex init error !", 20) && 1);
+			return (write(1, "Mutex init error !\n", 20) && 1);
 		}
 	}
 	return (0);

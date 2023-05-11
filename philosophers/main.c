@@ -38,9 +38,6 @@ int	mutex_destroy_join(long pos, t_stats *stats, pthread_t *philo)
 
 int	ft_mutex_init(t_stats *stats)
 {
-	long long	pos;
-
-	pos = -1;
 	if (pthread_mutex_init(&stats->dead, NULL) != 0)
 		return (write(1, "Mutex init error !\n", 20) && 1);
 	if (pthread_mutex_init(&stats->print, NULL) != 0)
