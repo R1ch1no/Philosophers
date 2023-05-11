@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 14:12:56 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/10 18:38:16 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/11 18:39:05 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,7 @@ int	mutex_destroy_join(long pos, t_stats *stats, pthread_t *philo)
 	pthread_mutex_destroy(&stats->print);
 	pthread_mutex_destroy(&stats->count);
 	while (++pos < stats->nb_philosoph)
-	{
 		pthread_mutex_destroy(&stats->eat[pos]);
-	}
 	free(stats->eat);
 	free(stats->philo);
 	free(stats);
@@ -67,15 +65,10 @@ int	ft_start(t_stats *stats)
 	pthread_t	philo[500];
 
 	pos = -1;
-	stats->death = 0;
 	if (ft_mutex_init(stats) == 1)
 		return (1);
 	while (++pos < stats->nb_philosoph)
 	{
-		stats->philo[pos].position = pos;
-		stats->philo[pos].nb_ate = 0;
-		stats->philo[pos].slept = 0;
-		stats->philo[pos].think = 0;
 		stats->philo[pos].last_ate = ft_timestamp();
 		stats->philo[pos].start_time = ft_timestamp();
 		if (pthread_create(&philo[pos], NULL, ft_commander,
@@ -87,6 +80,7 @@ int	ft_start(t_stats *stats)
 		}
 	}
 	philo_die(stats);
+	mutex_destroy_join(pos, stats, philo);
 	return (0);
 }
 
@@ -110,12 +104,7 @@ int	ft_phil_init(int argc, char **argv, t_stats *stats)
 		free(stats->philo);
 		return (write(1, "Allocation error!\n", 18) && 1);
 	}
-	while (++pos < stats->nb_philosoph)
-	{
-		stats->philo[pos].rules = stats;
-		stats->philo[pos].left_fork = pos;
-		stats->philo[pos].right_fork = (pos + 1) % stats->nb_philosoph;
-	}
+	phil_init_two(stats);
 	return (0);
 }
 
@@ -131,6 +120,7 @@ int	main(int argc, char **argv)
 	stats->to_eat = -1;
 	stats->done_eat = 0;
 	stats->all_ate = 0;
+	stats->death = 0;
 	if (ft_phil_init(argc, argv, stats) == 1)
 	{
 		free(stats);

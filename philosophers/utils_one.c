@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:53:33 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/10 19:42:47 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/11 18:39:07 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,21 +52,37 @@ long long	ft_timestamp(void)
 }
 
 //replacement of usleep
-void	wait_time(long long waiting)
+void	wait_time(long long waiting, t_philosph *philo)
 {
 	long long	timestamp_begin;
 
 	timestamp_begin = ft_timestamp();
 	while ((ft_timestamp() - timestamp_begin) < waiting)
-		usleep(100);
+		ft_usleep(100, philo);
 }
 
-void	ft_printer(char *message, t_stats *stats, long long pos)
+void	ft_usleep(long long waiting, t_philosph *philo)
 {
-	pthread_mutex_lock(&stats->print);
-	printf("%lli\t%lli\t%s\n", ft_timestamp() - stats->philo[pos].start_time,
-			pos + 1, message);
-	pthread_mutex_unlock(&stats->print);
+	struct timeval	tv;
+	long long		start_time;
+	long long		current_time;
+	unsigned int	elapsed_time;
+
+	gettimeofday(&tv, NULL);
+	start_time = ((tv.tv_sec * 1000000) + tv.tv_usec);
+	while (1)
+	{
+		pthread_mutex_lock(&philo->rules->wait);
+		gettimeofday(&tv, NULL);
+		current_time = ((tv.tv_sec * 1000000) + tv.tv_usec);
+		elapsed_time = current_time - start_time;
+		if (elapsed_time >= waiting)
+		{
+			pthread_mutex_unlock(&philo->rules->wait);
+			break ;
+		}
+		pthread_mutex_unlock(&philo->rules->wait);
+	}
 }
 
 int	check_nums(char **argv)
