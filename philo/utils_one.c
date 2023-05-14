@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:53:33 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/14 14:50:18 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/14 19:38:47 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,16 +51,7 @@ long long	ft_timestamp(void)
 	return (timestamp);
 }
 
-//replacement of usleep
-void	wait_time(long long waiting, t_philosph *philo)
-{
-	long long	timestamp_begin;
-
-	timestamp_begin = ft_timestamp();
-	while ((ft_timestamp() - timestamp_begin) < waiting)
-		ft_usleep(100, philo);
-}
-
+//replacement of usleep function
 void	ft_usleep(long long waiting, t_philosph *philo)
 {
 	struct timeval	tv;

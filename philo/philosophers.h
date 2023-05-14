@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:57:19 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/14 13:15:33 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/14 19:38:47 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,6 @@ typedef struct s_stats
 
 char				*ft_itoa(int n);
 void				phil_init_two(t_stats *stats);
-void				wait_time(long long waiting, t_philosph *philo);
 void				sleep_think(t_philosph *philo);
 void				ft_printer(char *message, t_stats *stats, long long pos);
 void				philo_die(t_stats *stats);

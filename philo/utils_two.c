@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/09 17:08:24 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/14 13:15:30 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/14 19:38:45 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,16 +51,19 @@ int	ft_done_eating(t_stats *stats, long long pos)
 		pthread_mutex_unlock(&stats->count);
 	}
 	if (ate == stats->nb_philosoph)
+	{
+		pthread_mutex_lock(&stats->dead);
+		stats->all_ate = 1;
+		pthread_mutex_unlock(&stats->dead);
 		return (1);
+	}
 	return (0);
 }
 
 int	ft_sleep(t_philosph *philo)
 {
-	if (ft_done_eating(philo->rules, 1) == 1)
-		return (1);
 	pthread_mutex_lock(&philo->rules->dead);
-	if (philo->rules->death == 1)
+	if (philo->rules->death == 1 || philo->rules->all_ate == 1)
 	{
 		pthread_mutex_unlock(&philo->rules->dead);
 		return (1);
@@ -81,14 +84,12 @@ void	sleep_think(t_philosph *philo)
 	if (ft_sleep(philo) == 1)
 		return ;
 	pthread_mutex_lock(&philo->rules->dead);
-	if (philo->rules->death == 1)
+	if (philo->rules->death == 1 || philo->rules->all_ate == 1)
 	{
 		pthread_mutex_unlock(&philo->rules->dead);
 		return ;
 	}
 	pthread_mutex_unlock(&philo->rules->dead);
-	if (ft_done_eating(philo->rules, 1) == 1)
-		return ;
 	if (philo->think == 0 && (philo->nb_ate <= philo->rules->to_eat
 			|| philo->rules->to_eat == -1))
 	{
@@ -105,14 +106,14 @@ int	ft_check_params(int argc, char **argv)
 		return (write(2, "Wrong number of arguments\n", 26) && 1);
 	if (argc == 6)
 	{
-		if (ft_atoi(argv[1]) < 1 || ft_atoi(argv[1]) > 500
+		if (ft_atoi(argv[1]) < 1 || ft_atoi(argv[1]) > 200
 			|| ft_atoi(argv[2]) < 0 || ft_atoi(argv[3]) < 0
 			|| ft_atoi(argv[4]) < 0 || ft_atoi(argv[5]) <= 0)
 			return (write(2, "Wrong parameters !\n", 19) && 1);
 	}
 	if (argc == 5)
 	{
-		if (ft_atoi(argv[1]) < 1 || ft_atoi(argv[1]) > 500
+		if (ft_atoi(argv[1]) < 1 || ft_atoi(argv[1]) > 200
 			|| ft_atoi(argv[2]) < 0 || ft_atoi(argv[3]) < 0
 			|| ft_atoi(argv[4]) < 0)
 			return (write(2, "Wrong parameters !\n", 19) && 1);
