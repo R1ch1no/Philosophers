@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/09 17:08:24 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/14 19:38:45 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/15 11:05:51 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,10 +45,10 @@ int	ft_done_eating(t_stats *stats, long long pos)
 		return (0);
 	while (++pas < stats->nb_philosoph)
 	{
-		pthread_mutex_lock(&stats->count);
+		pthread_mutex_lock(&stats->wait);
 		if (stats->philo[pas].nb_ate >= stats->to_eat)
 			++ate;
-		pthread_mutex_unlock(&stats->count);
+		pthread_mutex_unlock(&stats->wait);
 	}
 	if (ate == stats->nb_philosoph)
 	{
@@ -60,42 +60,15 @@ int	ft_done_eating(t_stats *stats, long long pos)
 	return (0);
 }
 
-int	ft_sleep(t_philosph *philo)
-{
-	pthread_mutex_lock(&philo->rules->dead);
-	if (philo->rules->death == 1 || philo->rules->all_ate == 1)
-	{
-		pthread_mutex_unlock(&philo->rules->dead);
-		return (1);
-	}
-	pthread_mutex_unlock(&philo->rules->dead);
-	if (philo->slept == 0 && (philo->nb_ate <= philo->rules->to_eat
-			|| philo->rules->to_eat == -1))
-	{
-		philo->slept = 1;
-		ft_printer("is sleeping", philo->rules, philo->position);
-	}
-	ft_usleep(philo->rules->time_to_sleep * 1000, philo);
-	return (0);
-}
-
 void	sleep_think(t_philosph *philo)
 {
-	if (ft_sleep(philo) == 1)
+	if (ft_stop(philo) == 1)
 		return ;
-	pthread_mutex_lock(&philo->rules->dead);
-	if (philo->rules->death == 1 || philo->rules->all_ate == 1)
-	{
-		pthread_mutex_unlock(&philo->rules->dead);
+	ft_printer("is sleeping", philo->rules, philo->position);
+	ft_usleep(philo->rules->time_to_sleep * 1000, philo);
+	if (ft_stop(philo) == 1)
 		return ;
-	}
-	pthread_mutex_unlock(&philo->rules->dead);
-	if (philo->think == 0 && (philo->nb_ate <= philo->rules->to_eat
-			|| philo->rules->to_eat == -1))
-	{
-		philo->think = 1;
-		ft_printer("is thinking", philo->rules, philo->position);
-	}
+	ft_printer("is thinking", philo->rules, philo->position);
 }
 
 int	ft_check_params(int argc, char **argv)

@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:53:33 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/14 19:38:47 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/15 11:05:48 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ int	ft_atoi(const char *str)
 	return (result * sign);
 }
 
+//returns current miliseconds
 long long	ft_timestamp(void)
 {
 	struct timeval	tv;
@@ -63,19 +64,20 @@ void	ft_usleep(long long waiting, t_philosph *philo)
 	start_time = ((tv.tv_sec * 1000000) + tv.tv_usec);
 	while (1)
 	{
-		pthread_mutex_lock(&philo->rules->wait);
+		pthread_mutex_lock(&philo->rules->count);
 		gettimeofday(&tv, NULL);
 		current_time = ((tv.tv_sec * 1000000) + tv.tv_usec);
 		elapsed_time = current_time - start_time;
 		if (elapsed_time >= waiting)
 		{
-			pthread_mutex_unlock(&philo->rules->wait);
+			pthread_mutex_unlock(&philo->rules->count);
 			break ;
 		}
-		pthread_mutex_unlock(&philo->rules->wait);
+		pthread_mutex_unlock(&philo->rules->count);
 	}
 }
 
+//checks if input is only made of numbers
 int	check_nums(char **argv)
 {
 	int	j;

@@ -6,11 +6,24 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/10 11:34:15 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/14 19:38:46 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/15 11:05:50 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
+
+//makes functions to stop if somebody died or all ate
+int	ft_stop(t_philosph *philo)
+{
+	pthread_mutex_lock(&philo->rules->dead);
+	if (philo->rules->death == 1 || philo->rules->all_ate == 1)
+	{
+		pthread_mutex_unlock(&philo->rules->dead);
+		return (1);
+	}
+	pthread_mutex_unlock(&philo->rules->dead);
+	return (0);
+}
 
 int	ft_will_die(t_stats *stats, long long pos)
 {
@@ -20,6 +33,9 @@ int	ft_will_die(t_stats *stats, long long pos)
 	{
 		pthread_mutex_unlock(&stats->wait);
 		ft_printer("died", stats, pos);
+		pthread_mutex_lock(&stats->dead);
+		stats->death = 1;
+		pthread_mutex_unlock(&stats->dead);
 		return (1);
 	}
 	else
@@ -38,8 +54,6 @@ void	ft_printer(char *message, t_stats *stats, long long pos)
 		return ;
 	}
 	pthread_mutex_unlock(&stats->dead);
-	pthread_mutex_unlock(&stats->print);
-	pthread_mutex_lock(&stats->print);
 	printf("%lli\t%lli\t%s\n", ft_timestamp() - stats->philo[pos].start_time,
 		pos + 1, message);
 	pthread_mutex_unlock(&stats->print);

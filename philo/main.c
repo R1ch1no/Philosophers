@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 14:12:56 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/14 19:38:48 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/15 11:05:45 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,9 +88,6 @@ int	ft_start(t_stats *stats)
 
 int	ft_phil_init(int argc, char **argv, t_stats *stats)
 {
-	long	pos;
-
-	pos = -1;
 	stats->nb_philosoph = ft_atoi(argv[1]);
 	stats->time_to_die = ft_atoi(argv[2]);
 	stats->time_to_eat = ft_atoi(argv[3]);

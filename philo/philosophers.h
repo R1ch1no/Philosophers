@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:57:19 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/14 19:38:47 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/15 11:05:48 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ void				*ft_commander(void *philo);
 void				ft_unfork(t_philosph *philo);
 void				ft_usleep(long long waiting, t_philosph *philo);
 int					ft_mutex_init(t_stats *stats);
+int					ft_stop(t_philosph *philo);
 int					ft_check_params(int argc, char **argv);
 int					ft_mutex_init(t_stats *stats);
 int					check_nums(char **argv);
