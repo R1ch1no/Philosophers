@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 14:12:56 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/14 13:15:53 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/15 16:05:39 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,13 +69,14 @@ int	ft_start(t_stats *stats)
 		return (1);
 	while (++pos < stats->nb_philosoph)
 	{
-		stats->philo[pos].last_ate = ft_timestamp();
+		pthread_mutex_lock(&stats->dead);
 		stats->philo[pos].start_time = ft_timestamp();
+		stats->philo[pos].last_ate = ft_timestamp();
+		pthread_mutex_unlock(&stats->dead);
 		if (pthread_create(&philo[pos], NULL, ft_commander,
 				&stats->philo[pos]) != 0)
 		{
 			write(2, "Thread creation error!\n", 24);
-			--pos;
 			return (mutex_destroy_join(pos, stats, philo) && 1);
 		}
 	}
@@ -86,9 +87,9 @@ int	ft_start(t_stats *stats)
 
 int	ft_phil_init(int argc, char **argv, t_stats *stats)
 {
-	long	pos;
-
-	pos = -1;
+	stats->to_eat = -1;
+	stats->all_ate = 0;
+	stats->death = 0;
 	stats->nb_philosoph = ft_atoi(argv[1]);
 	stats->time_to_die = ft_atoi(argv[2]);
 	stats->time_to_eat = ft_atoi(argv[3]);
@@ -117,10 +118,6 @@ int	main(int argc, char **argv)
 	stats = malloc(sizeof(t_stats));
 	if (!stats)
 		return (write(2, "Could not allocate stats!\n", 26) && 0);
-	stats->to_eat = -1;
-	stats->done_eat = 0;
-	stats->all_ate = 0;
-	stats->death = 0;
 	if (ft_phil_init(argc, argv, stats) == 1)
 	{
 		free(stats);

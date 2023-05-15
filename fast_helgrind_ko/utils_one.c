@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:53:33 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/15 11:05:48 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/15 15:51:20 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,30 @@ int	ft_atoi(const char *str)
 			return (0);
 	}
 	return (result * sign);
+}
+
+//checks if input is correct
+int	ft_check_params(int argc, char **argv)
+{
+	if (check_nums(argv) == 1)
+		return (1);
+	if (argc < 5 || argc > 6)
+		return (write(2, "Wrong number of arguments\n", 26) && 1);
+	if (argc == 6)
+	{
+		if (ft_atoi(argv[1]) < 1 || ft_atoi(argv[1]) > 200
+			|| ft_atoi(argv[2]) < 0 || ft_atoi(argv[3]) < 0
+			|| ft_atoi(argv[4]) < 0 || ft_atoi(argv[5]) <= 0)
+			return (write(2, "Wrong parameters !\n", 19) && 1);
+	}
+	if (argc == 5)
+	{
+		if (ft_atoi(argv[1]) < 1 || ft_atoi(argv[1]) > 200
+			|| ft_atoi(argv[2]) < 0 || ft_atoi(argv[3]) < 0
+			|| ft_atoi(argv[4]) < 0)
+			return (write(2, "Wrong parameters !\n", 19) && 1);
+	}
+	return (0);
 }
 
 //returns current miliseconds

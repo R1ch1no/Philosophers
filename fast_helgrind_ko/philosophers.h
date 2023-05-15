@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:57:19 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/15 11:05:48 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/15 15:51:19 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,6 @@ typedef struct s_philosoph
 	long long		last_ate;
 	int				left_fork;
 	int				right_fork;
-	int				slept;
-	int				think;
 	struct s_stats	*rules;
 }					t_philosph;
 

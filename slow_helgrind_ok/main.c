@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 14:12:56 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/15 11:05:45 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/14 19:23:44 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,25 +69,26 @@ int	ft_start(t_stats *stats)
 		return (1);
 	while (++pos < stats->nb_philosoph)
 	{
-		pthread_mutex_lock(&stats->wait);
 		stats->philo[pos].last_ate = ft_timestamp();
 		stats->philo[pos].start_time = ft_timestamp();
-		pthread_mutex_unlock(&stats->wait);
 		if (pthread_create(&philo[pos], NULL, ft_commander,
 				&stats->philo[pos]) != 0)
 		{
 			write(2, "Thread creation error!\n", 24);
+			--pos;
 			return (mutex_destroy_join(pos, stats, philo) && 1);
 		}
 	}
 	philo_die(stats);
-	usleep(1000);
 	mutex_destroy_join(pos, stats, philo);
 	return (0);
 }
 
 int	ft_phil_init(int argc, char **argv, t_stats *stats)
 {
+	long	pos;
+
+	pos = -1;
 	stats->nb_philosoph = ft_atoi(argv[1]);
 	stats->time_to_die = ft_atoi(argv[2]);
 	stats->time_to_eat = ft_atoi(argv[3]);
@@ -117,6 +118,7 @@ int	main(int argc, char **argv)
 	if (!stats)
 		return (write(2, "Could not allocate stats!\n", 26) && 0);
 	stats->to_eat = -1;
+	stats->done_eat = 0;
 	stats->all_ate = 0;
 	stats->death = 0;
 	if (ft_phil_init(argc, argv, stats) == 1)

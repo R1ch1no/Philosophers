@@ -6,7 +6,7 @@
 #    By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/02/02 14:03:41 by rkurnava          #+#    #+#              #
-#    Updated: 2023/05/15 11:05:47 by rkurnava         ###   ########.fr        #
+#    Updated: 2023/05/15 15:51:18 by rkurnava         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ CC = cc
 
 CFLAGS =	-Wall -Werror -Wextra
 
-SRC =	main.c eat_sleep_think.c utils_one.c utils_two.c utils_three.c\
+SRC =	main.c eat_sleep_think.c utils_one.c utils_two.c \
 
 all: $(NAME)
 
