@@ -6,7 +6,7 @@
 #    By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/02/02 14:03:41 by rkurnava          #+#    #+#              #
-#    Updated: 2023/05/14 13:15:34 by rkurnava         ###   ########.fr        #
+#    Updated: 2023/05/17 19:02:49 by rkurnava         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,14 +16,14 @@ CC = cc
 
 CFLAGS =	-Wall -Werror -Wextra
 
-SRC =	main.c eat_sleep_think.c utils_one.c utils_two.c utils_three.c\
+SRC =	main.c eat_sleep_think.c utils_one.c utils_two.c \
 
 all: $(NAME)
 
 OBJ  =	$(SRC:.c=.o)
 
 $(NAME) : $(OBJ)
-	@$(CC) $(OBJ) $(CFLAGS) -o $(NAME) -pthread
+	@$(CC) $(OBJ) $(CFLAGS) -o $(NAME) -pthread -fsanitize=thread
 	@echo "$(NAME) created"
 
 %.o : %.c

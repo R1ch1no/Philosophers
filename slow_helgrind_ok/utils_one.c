@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:53:33 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/14 14:50:18 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/17 19:02:48 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,31 @@ int	ft_atoi(const char *str)
 	return (result * sign);
 }
 
+//checks if input is correct
+int	ft_check_params(int argc, char **argv)
+{
+	if (check_nums(argv) == 1)
+		return (1);
+	if (argc < 5 || argc > 6)
+		return (write(2, "Wrong number of arguments\n", 26) && 1);
+	if (argc == 6)
+	{
+		if (ft_atoi(argv[1]) < 1 || ft_atoi(argv[1]) > 200
+			|| ft_atoi(argv[2]) < 0 || ft_atoi(argv[3]) < 0
+			|| ft_atoi(argv[4]) < 0 || ft_atoi(argv[5]) <= 0)
+			return (write(2, "Wrong parameters !\n", 19) && 1);
+	}
+	if (argc == 5)
+	{
+		if (ft_atoi(argv[1]) < 1 || ft_atoi(argv[1]) > 200
+			|| ft_atoi(argv[2]) < 0 || ft_atoi(argv[3]) < 0
+			|| ft_atoi(argv[4]) < 0)
+			return (write(2, "Wrong parameters !\n", 19) && 1);
+	}
+	return (0);
+}
+
+//returns current miliseconds
 long long	ft_timestamp(void)
 {
 	struct timeval	tv;
@@ -51,16 +76,7 @@ long long	ft_timestamp(void)
 	return (timestamp);
 }
 
-//replacement of usleep
-void	wait_time(long long waiting, t_philosph *philo)
-{
-	long long	timestamp_begin;
-
-	timestamp_begin = ft_timestamp();
-	while ((ft_timestamp() - timestamp_begin) < waiting)
-		ft_usleep(100, philo);
-}
-
+//replacement of usleep function
 void	ft_usleep(long long waiting, t_philosph *philo)
 {
 	struct timeval	tv;
@@ -72,19 +88,20 @@ void	ft_usleep(long long waiting, t_philosph *philo)
 	start_time = ((tv.tv_sec * 1000000) + tv.tv_usec);
 	while (1)
 	{
-		pthread_mutex_lock(&philo->rules->wait);
+		pthread_mutex_lock(&philo->rules->count);
 		gettimeofday(&tv, NULL);
 		current_time = ((tv.tv_sec * 1000000) + tv.tv_usec);
 		elapsed_time = current_time - start_time;
 		if (elapsed_time >= waiting)
 		{
-			pthread_mutex_unlock(&philo->rules->wait);
+			pthread_mutex_unlock(&philo->rules->count);
 			break ;
 		}
-		pthread_mutex_unlock(&philo->rules->wait);
+		pthread_mutex_unlock(&philo->rules->count);
 	}
 }
 
+//checks if input is only made of numbers
 int	check_nums(char **argv)
 {
 	int	j;

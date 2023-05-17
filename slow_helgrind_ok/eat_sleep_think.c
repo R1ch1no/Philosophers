@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 16:57:00 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/14 19:23:45 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/17 19:04:00 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,99 +30,81 @@ void	philo_die(t_stats *stats)
 				break ;
 			}
 			if (break_it == 0 && ft_will_die(stats, pos) == 1)
-			{
-				pthread_mutex_lock(&stats->dead);
-				stats->death = 1;
-				pthread_mutex_unlock(&stats->dead);
 				return ;
-			}
 			ft_usleep(100, &stats->philo[pos]);
 		}
 	}
 }
 
-int	forking(t_philosph *philo)
+int	ft_done_eating(t_stats *stats, long long pos)
 {
-	pthread_mutex_lock(&philo->rules->dead);
-	if (philo->rules->death == 0 && ft_done_eating(philo->rules, 1) == 0)
-	{
-		pthread_mutex_unlock(&philo->rules->dead);
-		if (philo->position % 2 == 0)
-		{
-			pthread_mutex_lock(&philo->rules->eat[philo->left_fork]);
-			ft_printer("has taken a fork", philo->rules, philo->position);
-			pthread_mutex_lock(&philo->rules->eat[philo->right_fork]);
-			ft_printer("has taken a fork", philo->rules, philo->position);
-			philo->think = 0;
-			philo->slept = 0;
-			return (0);
-		}
-		pthread_mutex_lock(&philo->rules->eat[philo->right_fork]);
-		ft_printer("has taken a fork", philo->rules, philo->position);
-		pthread_mutex_lock(&philo->rules->eat[philo->left_fork]);
-		ft_printer("has taken a fork", philo->rules, philo->position);
-		philo->think = 0;
-		philo->slept = 0;
+	long long	pas;
+	long long	ate;
+
+	pas = -1;
+	ate = 0;
+	(void)pos;
+	if (stats->to_eat == -1)
 		return (0);
-	}
-	pthread_mutex_unlock(&philo->rules->dead);
-	return (1);
-}
-
-//philosopher eats
-void	philo_eat_one(t_philosph *philo)
-{
-	if (philo->rules->nb_philosoph > 1 && philo->nb_ate <= philo->rules->to_eat
-		&& ft_done_eating(philo->rules, 1) == 0)
+	while (++pas < stats->nb_philosoph)
 	{
-		pthread_mutex_lock(&philo->rules->dead);
-		if (philo->rules->death == 1)
-		{
-			pthread_mutex_unlock(&philo->rules->dead);
-			return ;
-		}
-		pthread_mutex_unlock(&philo->rules->dead);
-		if (forking(philo) == 0)
-		{
-			pthread_mutex_lock(&philo->rules->wait);
-			philo->last_ate = ft_timestamp();
-			pthread_mutex_unlock(&philo->rules->wait);
-			ft_printer("is eating", philo->rules, philo->position);
-			wait_time(philo->rules->time_to_eat, philo);
-			ft_unfork(philo);
-			pthread_mutex_lock(&philo->rules->count);
-			philo->nb_ate += 1;
-			pthread_mutex_unlock(&philo->rules->count);
-			return ;
-		}
-		pthread_mutex_unlock(&philo->rules->dead);
+		pthread_mutex_lock(&stats->dead);
+		if (stats->philo[pas].nb_ate >= stats->to_eat)
+			++ate;
+		pthread_mutex_unlock(&stats->dead);
 	}
+	if (ate == stats->nb_philosoph)
+	{
+		pthread_mutex_lock(&stats->dead);
+		stats->all_ate = 1;
+		pthread_mutex_unlock(&stats->dead);
+		return (1);
+	}
+	return (0);
+}
+
+int	fork_this(t_philosph *philo)
+{
+	if (philo->position % 2 == 0)
+	{
+		if (pthread_mutex_lock(&philo->rules->eat[philo->left_fork]) != 0)
+			return (1);
+		if (pthread_mutex_lock(&philo->rules->eat[philo->right_fork]) != 0)
+		{
+			pthread_mutex_unlock(&(philo->rules->eat[philo->left_fork]));
+			return (1);
+		}
+		ft_printer("has taken a fork", philo->rules, philo->position);
+	}
+	else
+	{
+		if (pthread_mutex_lock(&philo->rules->eat[philo->right_fork]) != 0)
+			return (1);
+		if (pthread_mutex_lock(&philo->rules->eat[philo->left_fork]) != 0)
+		{
+			pthread_mutex_unlock(&(philo->rules->eat[philo->right_fork]));
+			return (1);
+		}
+		ft_printer("has taken a fork", philo->rules, philo->position);
+	}
+	return (0);
 }
 
 //philosopher eats
-void	philo_eat_two(t_philosph *philo)
+void	philo_eat(t_philosph *philo)
 {
 	if (philo->rules->nb_philosoph > 1)
 	{
+		if (fork_this(philo) == 1)
+			return ;
+		ft_printer("is eating", philo->rules, philo->position);
 		pthread_mutex_lock(&philo->rules->dead);
-		if (philo->rules->death == 1)
-		{
-			pthread_mutex_unlock(&philo->rules->dead);
-			return ;
-		}
+		philo->last_ate = ft_timestamp();
+		philo->nb_ate += 1;
 		pthread_mutex_unlock(&philo->rules->dead);
-		if (forking(philo) == 0)
-		{
-			pthread_mutex_lock(&philo->rules->wait);
-			philo->last_ate = ft_timestamp();
-			pthread_mutex_unlock(&philo->rules->wait);
-			ft_printer("is eating", philo->rules, philo->position);
-			wait_time(philo->rules->time_to_eat, philo);
-			ft_unfork(philo);
-			pthread_mutex_lock(&philo->rules->count);
-			pthread_mutex_unlock(&philo->rules->count);
-			return ;
-		}
+		ft_usleep(philo->rules->time_to_eat * 1000, philo);
+		pthread_mutex_unlock(&(philo->rules->eat[philo->left_fork]));
+		pthread_mutex_unlock(&(philo->rules->eat[philo->right_fork]));
 	}
 }
 
@@ -131,21 +113,17 @@ void	*ft_commander(void *philos)
 {
 	t_philosph	*philo;
 
+	if (!philos)
+		return (NULL);
 	philo = (struct s_philosoph *)philos;
 	pthread_mutex_lock(&philo->rules->dead);
-	while (philo->nb_ate <= philo->rules->to_eat && philo->rules->to_eat > 0
-		&& philo->rules->death == 0 && ft_done_eating(philo->rules, 1) == 0)
+	while (philo->rules->death == 0 && philo->rules->all_ate == 0)
 	{
 		pthread_mutex_unlock(&philo->rules->dead);
-		philo_eat_one(philo);
-		sleep_think(philo);
-		pthread_mutex_lock(&philo->rules->dead);
-	}
-	while (philo->rules->to_eat == -1 && philo->rules->death == 0)
-	{
-		pthread_mutex_unlock(&philo->rules->dead);
-		philo_eat_two(philo);
-		sleep_think(philo);
+		philo_eat(philo);
+		ft_printer("is sleeping", philo->rules, philo->position);
+		ft_usleep(philo->rules->time_to_eat * 1000, philo);
+		ft_printer("is thinking", philo->rules, philo->position);
 		pthread_mutex_lock(&philo->rules->dead);
 	}
 	pthread_mutex_unlock(&philo->rules->dead);
