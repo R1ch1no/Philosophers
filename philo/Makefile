@@ -6,7 +6,7 @@
 #    By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/02/02 14:03:41 by rkurnava          #+#    #+#              #
-#    Updated: 2023/05/17 19:02:49 by rkurnava         ###   ########.fr        #
+#    Updated: 2023/05/18 15:44:21 by rkurnava         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,7 @@ all: $(NAME)
 OBJ  =	$(SRC:.c=.o)
 
 $(NAME) : $(OBJ)
-	@$(CC) $(OBJ) $(CFLAGS) -o $(NAME) -pthread -fsanitize=thread
+	@$(CC) $(OBJ) $(CFLAGS) -o $(NAME) -pthread
 	@echo "$(NAME) created"
 
 %.o : %.c

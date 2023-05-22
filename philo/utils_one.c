@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:53:33 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/17 19:02:48 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/18 15:44:19 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,8 @@ int	check_nums(char **argv)
 		{
 			if (argv[j][i] < '0' || argv[j][i] > '9')
 			{
-				write(1, "Non-numeric paramaters are not valid!\n", 38);
+				write(2, "Only positive and numeric values are accepted!\n",
+					47);
 				return (1);
 			}
 		}

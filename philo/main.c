@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 14:12:56 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/15 16:05:39 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/05/18 15:44:22 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,12 @@ int	mutex_destroy_join(long pos, t_stats *stats, pthread_t *philo)
 		}
 	}
 	pos = -1;
-	pthread_mutex_destroy(&stats->dead);
-	pthread_mutex_destroy(&stats->print);
-	pthread_mutex_destroy(&stats->count);
 	while (++pos < stats->nb_philosoph)
 		pthread_mutex_destroy(&stats->eat[pos]);
+	pthread_mutex_destroy(&stats->wait);
+	pthread_mutex_destroy(&stats->count);
+	pthread_mutex_destroy(&stats->dead);
+	pthread_mutex_destroy(&stats->print);
 	free(stats->eat);
 	free(stats->philo);
 	free(stats);
@@ -66,7 +67,7 @@ int	ft_start(t_stats *stats)
 
 	pos = -1;
 	if (ft_mutex_init(stats) == 1)
-		return (1);
+		return (2);
 	while (++pos < stats->nb_philosoph)
 	{
 		pthread_mutex_lock(&stats->dead);
@@ -76,6 +77,9 @@ int	ft_start(t_stats *stats)
 		if (pthread_create(&philo[pos], NULL, ft_commander,
 				&stats->philo[pos]) != 0)
 		{
+			pthread_mutex_lock(&stats->dead);
+			stats->all_ate = 1;
+			pthread_mutex_unlock(&stats->dead);
 			write(2, "Thread creation error!\n", 24);
 			return (mutex_destroy_join(pos, stats, philo) && 1);
 		}
@@ -123,7 +127,7 @@ int	main(int argc, char **argv)
 		free(stats);
 		return (0);
 	}
-	if (ft_start(stats) == 1)
+	if (ft_start(stats) == 2)
 	{
 		free(stats->eat);
 		free(stats->philo);
