@@ -26,9 +26,6 @@ $(NAME) : $(OBJ)
 	@$(CC) $(OBJ) $(CFLAGS) -o $(NAME) -pthread
 	@echo "$(NAME) created"
 
-%.o : %.c
-	@$(CC) $(CFLAGS) -c -g -o $@ $<
-
 clean :
 	@rm -f $(OBJ)
 	@echo "Done cleaning"
