@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 14:12:56 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/18 15:44:22 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/10/19 12:44:35 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,17 +121,18 @@ int	main(int argc, char **argv)
 		return (0);
 	stats = malloc(sizeof(t_stats));
 	if (!stats)
-		return (write(2, "Could not allocate stats!\n", 26) && 0);
+		return (write(2, "Could not allocate stats!\n", 26), 1);
 	if (ft_phil_init(argc, argv, stats) == 1)
+		return (free(stats), 1);
+	if (stats->nb_philosoph == 1)
 	{
-		free(stats);
-		return (0);
+		if (one_philo(stats) == 2)
+			return (free(stats->eat), free(stats->philo), free(stats), 1);
 	}
-	if (ft_start(stats) == 2)
+	else if (stats->nb_philosoph > 1)
 	{
-		free(stats->eat);
-		free(stats->philo);
-		free(stats);
+		if (ft_start(stats) == 2)
+			return (free(stats->eat), free(stats->philo), free(stats), 1);
 	}
 	return (0);
 }

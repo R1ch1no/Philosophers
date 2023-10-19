@@ -6,7 +6,7 @@
 #    By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/02/02 14:03:41 by rkurnava          #+#    #+#              #
-#    Updated: 2023/05/18 15:44:21 by rkurnava         ###   ########.fr        #
+#    Updated: 2023/10/19 12:46:10 by rkurnava         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,16 +14,16 @@ NAME =	philo
 
 CC = cc
 
-CFLAGS =	-Wall -Werror -Wextra
+CFLAGS =	-Wall -Werror -Wextra #-fsanitize=thread #testingflag
 
-SRC =	main.c eat_sleep_think.c utils_one.c utils_two.c \
+SRC =	main.c eat_sleep_think.c utils_one.c utils_two.c one_philo.c \
 
 all: $(NAME)
 
 OBJ  =	$(SRC:.c=.o)
 
 $(NAME) : $(OBJ)
-	@$(CC) $(OBJ) $(CFLAGS) -o $(NAME) -pthread
+	@$(CC) $(OBJ) $(CFLAGS) -o $(NAME)
 	@echo "$(NAME) created"
 
 clean :

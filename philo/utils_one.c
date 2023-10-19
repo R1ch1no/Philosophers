@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:53:33 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/18 15:44:19 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/10/19 11:48:48 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ long long	ft_timestamp(void)
 }
 
 //replacement of usleep function
-void	ft_usleep(long long waiting, t_philosph *philo)
+int	ft_usleep(long long waiting, t_philosph *philo)
 {
 	struct timeval	tv;
 	long long		start_time;
@@ -88,16 +88,19 @@ void	ft_usleep(long long waiting, t_philosph *philo)
 	start_time = ((tv.tv_sec * 1000000) + tv.tv_usec);
 	while (1)
 	{
-		pthread_mutex_lock(&philo->rules->count);
 		gettimeofday(&tv, NULL);
 		current_time = ((tv.tv_sec * 1000000) + tv.tv_usec);
 		elapsed_time = current_time - start_time;
-		if (elapsed_time >= waiting)
+		pthread_mutex_lock(&philo->rules->dead);
+		if (philo->rules->death == 1 || philo->rules->all_ate == 1)
 		{
-			pthread_mutex_unlock(&philo->rules->count);
-			break ;
+			pthread_mutex_unlock(&philo->rules->dead);
+			return (1);
 		}
-		pthread_mutex_unlock(&philo->rules->count);
+		pthread_mutex_unlock(&philo->rules->dead);
+		if (elapsed_time >= waiting)
+			return (0);
+		usleep(50);
 	}
 }
 

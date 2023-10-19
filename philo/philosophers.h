@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:57:19 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/05/18 15:50:13 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/10/19 12:11:16 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,16 +53,16 @@ typedef struct s_stats
 }					t_stats;
 
 void				phil_init_two(t_stats *stats);
-void				sleep_think(t_philosph *philo);
 void				ft_printer(char *message, t_stats *stats, long long pos);
 void				philo_die(t_stats *stats);
 void				*ft_commander(void *philo);
-void				ft_usleep(long long waiting, t_philosph *philo);
+int					ft_usleep(long long waiting, t_philosph *philo);
 int					ft_mutex_init(t_stats *stats);
 int					ft_check_params(int argc, char **argv);
 int					check_nums(char **argv);
 int					ft_atoi(const char *str);
 int					ft_start(t_stats *stats);
+int					one_philo(t_stats *stats);
 int					ft_done_eating(t_stats *stats, long long pos);
 int					mutex_init_part_two(t_stats *stats);
 int					ft_will_die(t_stats *stats, long long pos);
