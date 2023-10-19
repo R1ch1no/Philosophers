@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 14:12:56 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/10/19 12:44:35 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/10/19 13:25:21 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,15 @@
 
 int	mutex_destroy_join(long pos, t_stats *stats, pthread_t *philo)
 {
+	int	status;
+
+	status = 0;
 	while (--pos > -1)
 	{
 		if (pthread_join(philo[pos], NULL) != 0)
 		{
 			write(2, "Thread joining error!\n", 22);
-			return (0);
+			status = 1;
 		}
 	}
 	pos = -1;
@@ -32,7 +35,7 @@ int	mutex_destroy_join(long pos, t_stats *stats, pthread_t *philo)
 	free(stats->eat);
 	free(stats->philo);
 	free(stats);
-	return (0);
+	return (status);
 }
 
 int	ft_mutex_init(t_stats *stats)
@@ -80,13 +83,12 @@ int	ft_start(t_stats *stats)
 			pthread_mutex_lock(&stats->dead);
 			stats->all_ate = 1;
 			pthread_mutex_unlock(&stats->dead);
-			write(2, "Thread creation error!\n", 24);
+			write(3, "Thread creation error!\n", 24);
 			return (mutex_destroy_join(pos, stats, philo) && 1);
 		}
 	}
 	philo_die(stats);
-	mutex_destroy_join(pos, stats, philo);
-	return (0);
+	return (mutex_destroy_join(pos, stats, philo));
 }
 
 int	ft_phil_init(int argc, char **argv, t_stats *stats)
@@ -116,7 +118,9 @@ int	ft_phil_init(int argc, char **argv, t_stats *stats)
 int	main(int argc, char **argv)
 {
 	t_stats	*stats;
+	int		status;
 
+	status = 0;
 	if (ft_check_params(argc, argv) == 1)
 		return (0);
 	stats = malloc(sizeof(t_stats));
@@ -126,13 +130,15 @@ int	main(int argc, char **argv)
 		return (free(stats), 1);
 	if (stats->nb_philosoph == 1)
 	{
-		if (one_philo(stats) == 2)
+		status = one_philo(stats);
+		if (status == 2)
 			return (free(stats->eat), free(stats->philo), free(stats), 1);
 	}
 	else if (stats->nb_philosoph > 1)
 	{
-		if (ft_start(stats) == 2)
+		status = ft_start(stats);
+		if (status == 2)
 			return (free(stats->eat), free(stats->philo), free(stats), 1);
 	}
-	return (0);
+	return (status);
 }
