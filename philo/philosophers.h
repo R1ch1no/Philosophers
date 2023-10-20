@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/12 16:57:19 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/10/19 12:11:16 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/10/20 13:19:58 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ typedef struct s_stats
 	pthread_mutex_t	print;
 }					t_stats;
 
+void				should_i_sleep(int pos);
 void				phil_init_two(t_stats *stats);
 void				ft_printer(char *message, t_stats *stats, long long pos);
 void				philo_die(t_stats *stats);

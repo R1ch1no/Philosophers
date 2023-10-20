@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 16:57:00 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/10/19 11:50:21 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/10/20 13:19:54 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,8 +111,7 @@ void	*ft_commander(void *philos)
 	if (!philos)
 		return (NULL);
 	philo = (struct s_philosoph *)philos;
-	if (philo->position % 2 == 1)
-		usleep(1500);
+	should_i_sleep(philo->position);
 	while (1)
 	{
 		if (philo_eat(philo))
@@ -129,6 +128,7 @@ void	*ft_commander(void *philos)
 			ft_printer("is thinking", philo->rules, philo->position);
 			philo->thought = 1;
 		}
+		usleep(100);
 	}
 	return (NULL);
 }

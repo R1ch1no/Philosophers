@@ -6,7 +6,7 @@
 /*   By: rkurnava <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/10 11:34:15 by rkurnava          #+#    #+#             */
-/*   Updated: 2023/10/19 12:12:23 by rkurnava         ###   ########.fr       */
+/*   Updated: 2023/10/20 13:19:20 by rkurnava         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,4 +81,10 @@ int	mutex_init_part_two(t_stats *stats)
 		}
 	}
 	return (0);
+}
+
+void	should_i_sleep(int pos)
+{
+	if (pos % 2 == 1)
+		usleep(1000);
 }
